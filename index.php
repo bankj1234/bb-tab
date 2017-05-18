@@ -5,33 +5,46 @@
  * Date: 5/18/2017 AD
  * Time: 12:16 PM
  */
+session_start();
+//ทำการเรียก Sesion_start(); เพื่อให้ Sesion ต่างๆทำงาน
 
-$fb = new \Facebook\Facebook([
+require_once __DIR__ . '/vendor/autoload.php';
+//ทำการสร้างการดึงไฟล์ต่างๆ
+//ของ facebook sdk ด้วยคำสั่ง  require_once  __DIR__ .'ตามด้วย ที่เก็บ file autoload.php '
+$fb = new Facebook\Facebook([
     'app_id' => '221875874976573',
     'app_secret' => 'bbea6680fb27d867a205ec0a372a7b52',
-    'default_graph_version' => 'v2.9',
-    //'default_access_token' => '{access-token}', // optional
+    'default_graph_version' => 'v2.2',
 ]);
 
-// Use one of the helper classes to get a Facebook\Authentication\AccessToken entity.
-//   $helper = $fb->getRedirectLoginHelper();
-//   $helper = $fb->getJavaScriptHelper();
-//   $helper = $fb->getCanvasHelper();
-//   $helper = $fb->getPageTabHelper();
+$helper = $fb->getPageTabHelper();
 
 try {
-    // Get the \Facebook\GraphNodes\GraphUser object for the current user.
-    // If you provided a 'default_access_token', the '{access-token}' is optional.
-    $response = $fb->get('/me');
-} catch(\Facebook\Exceptions\FacebookResponseException $e) {
+    $accessToken = $helper->getAccessToken();
+} catch(Facebook\Exceptions\FacebookResponseException $e) {
     // When Graph returns an error
     echo 'Graph returned an error: ' . $e->getMessage();
     exit;
-} catch(\Facebook\Exceptions\FacebookSDKException $e) {
+} catch(Facebook\Exceptions\FacebookSDKException $e) {
     // When validation fails or other local issues
     echo 'Facebook SDK returned an error: ' . $e->getMessage();
     exit;
 }
 
-$me = $response->getGraphUser();
-echo 'Logged in as ' . $me->getName();
+if (! isset($accessToken)) {
+    echo 'No OAuth data could be obtained from the signed request. User has not authorized your app yet.';
+    exit;
+}
+
+// Logged in
+echo '<h3>Page ID</h3>';
+var_dump($helper->getPageId());
+
+echo '<h3>User is admin of page</h3>';
+var_dump($helper->isAdmin());
+
+echo '<h3>Signed Request</h3>';
+var_dump($helper->getSignedRequest());
+
+echo '<h3>Access Token</h3>';
+var_dump($accessToken->getValue());
